@@ -2,10 +2,28 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer, setDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import firebaseConfig from '../firebase-applet-config.json';
+
+// 🔐 IMPORTANT: Use environment variables instead of hardcoded keys
+// Never commit sensitive credentials to version control!
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+};
+
+// Validate that required config is available
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error(
+    '❌ Firebase configuration missing! Make sure .env.local is configured correctly. ' +
+    'Copy .env.example to .env.local and fill in your Firebase credentials.'
+  );
+}
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || '(default)');
+export const db = getFirestore(app, import.meta.env.VITE_FIRESTORE_DATABASE_ID || '(default)');
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -25,6 +43,7 @@ export interface FirestoreErrorInfo {
   error: string;
   operationType: OperationType;
   path: string | null;
+  timestamp: string;
   authInfo: {
     userId?: string | null;
     email?: string | null;
@@ -38,7 +57,7 @@ export interface FirestoreErrorInfo {
   }
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -53,20 +72,29 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
       })) || []
     },
     operationType,
-    path
+    path,
+    timestamp: new Date().toISOString()
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  
+  console.error('🔴 Firestore Error: ', JSON.stringify(errInfo, null, 2));
   throw new Error(JSON.stringify(errInfo));
 }
 
-// CRITICAL CONSTRAINT: Test the connection on initial application boot
+// Test the connection on initial application boot
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
+    console.log('✅ Firebase connection successful');
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration.");
+    if (error instanceof Error && error.message.includes('offline')) {
+      console.warn('⚠️ Firebase is offline. Some features may not work.');
+    } else if (error instanceof Error && error.message.includes('permission')) {
+      console.warn('⚠️ Firebase permissions denied. Check Firestore rules.');
     }
   }
 }
-testConnection();
+
+// Only test connection if configuration is valid
+if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+  testConnection();
+}
