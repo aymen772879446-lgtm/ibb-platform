@@ -1,0 +1,8 @@
+{
+  "name": "Remix: منصة أحمد الهمداني",
+  "description": "بوابة متميزة ومصقولة في عالم السيارات النخبوية والقصور الفاخرة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

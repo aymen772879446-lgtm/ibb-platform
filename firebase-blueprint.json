@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Property": {
+      "title": "Property",
+      "description": "Luxury property or housing listing inside Ibb",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "desc": { "type": "string" },
+        "price": { "type": "string" },
+        "location": { "type": "string" },
+        "type": { "type": "string" },
+        "rooms": { "type": "integer" },
+        "image": { "type": "string" },
+        "images": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "phone": { "type": "string" },
+        "date": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "approved": { "type": "boolean" },
+        "userId": { "type": "string" }
+      },
+      "required": ["title", "price", "location", "type", "image", "phone"]
+    },
+    "Car": {
+      "title": "Car",
+      "description": "Hyper or high-end car listing",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "brand": { "type": "string" },
+        "model": { "type": "string" },
+        "price": { "type": "string" },
+        "status": { "type": "string" },
+        "odometer": { "type": "string" },
+        "image": { "type": "string" },
+        "images": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "phone": { "type": "string" },
+        "date": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "approved": { "type": "boolean" },
+        "userId": { "type": "string" }
+      },
+      "required": ["brand", "model", "price", "image", "phone"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Aman registered user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["uid", "displayName", "email"]
+    }
+  },
+  "firestore": {
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "Detailed verified housing listings inside Ibb"
+    },
+    "/cars/{carId}": {
+      "schema": "Car",
+      "description": "Verified high-end vehicles in Yemen"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Registered user accounts with auth info"
+    }
+  }
+}
